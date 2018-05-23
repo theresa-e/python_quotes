@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Welcome!</title>
+    {% load static %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'app_name/css/styles.css' %}">
+</head>
+
+<body>
+    <div class="container success">
+        <div class="text-right header">
+        <form action="/logout">
+            <input type="submit" class="btn" value="Log Out">
+        </form>
+        <a href="/myaccount/{{ request.session.userid }}">Edit my account</a>
+    </div>
+        <h1>Welcome {{request.session.first_name}}!!</h1>
+        <h5>{{ request.session.welcome_msg }}</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <h3>Quotes</h3>
+                {% for i in quotes %}
+                <div class="quotes">
+                <h4>
+                    <strong>{{ i.author }}:</strong> {{ i.quote }}</h4>
+                <p class="text-right">--- Posted by
+                    <a href="/user/{{ i.uploaded_by.id }}">
+                        {{ i.uploaded_by.first_name}} {{ i.uploaded_by.last_name }}
+                    </a>
+
+                </p>
+
+                <div class="text-right">
+                    <form action="/like_quote" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="quote_id" value="{{i.id}}">
+                        <p>Likes: {{ i.liked_by.count }} </p>
+                        <input type="hidden" name="userid" value={{ request.session.userid }}>
+                        <input class="btn-info btn" type="submit" value="Like">
+                    </form>
+                    {% if i.uploaded_by.id == request.session.userid %}
+                    <form action="/delete_quote" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="quote_id" value="{{i.id}}">
+                        <input type="submit" class="btn btn-secondary delete" name="" value="Delete">
+                    </form>
+                
+                {% endif %}
+                </div>
+            </div>
+                {% endfor %}
+            </div>
+            <div class="col-md-6">
+                <form action="/process_quote" method="POST">
+                    {% csrf_token %}
+                    <h3>Add a quote</h3>
+                    <div class="form-group">
+                        <h5>Quote</h5>
+                        <textarea class="form-control" rows="3" name="quote" placeholder="Share your favorite quote"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <h5>Author</h5>
+                        <input type="text" class="form-control" placeholder="Author Name" name="author">
+                    </div>
+                    <input type="hidden" name="userid" value={{ request.session.userid }}>
+                    <button class="btn" type="submit" value="submit">Add Quote</button>
+                    {% if messages %}
+                    <h3>Oops!</h3>
+                    <p>There was a problem with the form:</p>
+                    {% for i in messages %}
+                    <ul>
+                        <li>{{ i }}</li>
+                    </ul>
+                    {% endfor %} {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
